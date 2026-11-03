@@ -1,0 +1,15 @@
+# Elixir / Erlang
+erl_crash.dump
+_build/
+deps/
+*.ez
+*.beam
+.elixir_ls/
+.fetch
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
