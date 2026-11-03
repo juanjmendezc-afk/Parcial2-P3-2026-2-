@@ -45,6 +45,33 @@ Code.require_file("../comun/archivo.exs", __DIR__)
 | `Archivo.escribir_lineas(ruta, lineas)` | Crea o reemplaza el archivo y escribe una línea por elemento (lista o stream). | `:ok` o `{:error, mensaje}` |
 | `Archivo.emitir(ruta, lineas)` | Igual que `escribir_lineas/2`, pero además imprime cada línea en pantalla. | `:ok` o `{:error, mensaje}` |
 
+### Validaciones con recursión (sin `Enum` ni `Stream`)
+
+| Función | Recibe | Devuelve |
+| --- | --- | --- |
+| `Depuracion.depurar(conexiones)` (`problema1_rutas/depuracion.exs`) | Lista de `{numero_linea, texto, conexion}` en el orden del archivo; `conexion` tiene `origen`, `destino` y `distancia` (entero) | `{conservadas, reportes}`: las tuplas que se conservan (mismo orden) y una línea por corrección |
+| `Depuracion.lineas_reporte(reportes)` | Los reportes anteriores | Líneas para `depuracion_conexiones.txt` |
+| `ValidacionIsla.validar(filas, terrenos)` (`problema2_isla/validacion_isla.exs`) | `filas`: lista de filas, cada una lista de símbolos; `terrenos`: mapa `%{simbolo => terreno}` (con campo `nombre`) | `:ok` o `{:error, problemas}` |
+| `ValidacionIsla.lineas_reporte(resultado)` | El resultado anterior | Líneas para `validacion_isla.txt` |
+
+Uso esperado en el Problema 1 (después de `Conexion.parse/1`, que también conserva el número de línea y el texto):
+
+```elixir
+{conservadas, reportes} = Depuracion.depurar(conexiones_numeradas)
+Archivo.escribir_lineas(Path.join(__DIR__, "depuracion_conexiones.txt"), Depuracion.lineas_reporte(reportes))
+# El grafo se construye solo con `conservadas`
+```
+
+Uso esperado en el Problema 2:
+
+```elixir
+resultado = ValidacionIsla.validar(filas, terrenos)
+Archivo.escribir_lineas(Path.join(__DIR__, "validacion_isla.txt"), ValidacionIsla.lineas_reporte(resultado))
+# Si resultado es {:error, _}, no se realiza la búsqueda
+```
+
+Versión usada para probar: Elixir 1.19.4 (Erlang/OTP 28).
+
 ### Acuerdos de diseño
 
 - Las validaciones con recursión no usan `Enum` ni `Stream` (tampoco `length/1` ni `Enum.reverse/1`; se usan funciones recursivas propias). Sí se permite `Map`.
