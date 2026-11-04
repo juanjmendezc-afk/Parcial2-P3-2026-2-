@@ -1,0 +1,4 @@
+Fila 2: tiene 3 posiciones; se esperaban 4
+Posición {1,2}: el símbolo X no está en terrenos.csv
+Posición {2,1}: el borde debe ser agua y contiene C
+No hay bote B

@@ -1,0 +1,3 @@
+Línea 3: Pereira,Armenia,45 -> repetida (línea 2); se descarta
+Línea 4: Pereira,Pereira,0 -> conecta una ciudad consigo misma; se descarta
+Línea 5: Pereira,Armenia,50 -> distancia distinta a la de la línea 2 (45); se conserva la de la línea 2

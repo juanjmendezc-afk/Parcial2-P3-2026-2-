@@ -1,0 +1,3 @@
+Fila 3: tiene 6 posiciones; se esperaban 7
+Posición {0,4}: el borde debe ser agua y contiene C
+Hay 2 posiciones iniciales P: {1,1} y {4,3}

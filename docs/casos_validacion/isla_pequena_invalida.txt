@@ -1,0 +1,4 @@
+# Caso pequeño inválido: un problema de cada tipo
+~ ~ ~ ~
+~ P X ~
+~ C ~

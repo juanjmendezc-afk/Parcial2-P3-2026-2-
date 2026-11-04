@@ -29,6 +29,8 @@ problema2_isla/
   validacion_isla.exs          ← Transversal: validación recursiva del mapa
   isla.txt, terrenos.csv
 docs/                          ← pruebas de escritorio y árboles de llamadas
+  pruebas_escritorio_validaciones.md   ← Transversal: validaciones de ambos problemas
+  casos_validacion/                    ← Transversal: casos de prueba, probar_validaciones.exs y salidas/
 ```
 
 ### Módulo común `Archivo` (`comun/archivo.exs`)

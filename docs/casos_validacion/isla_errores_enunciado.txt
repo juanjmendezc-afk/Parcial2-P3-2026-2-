@@ -1,0 +1,8 @@
+# El mapa del enunciado con los tres errores del ejemplo de validacion_isla.txt
+~ ~ ~ ~ C ~ ~
+~ P C C C C ~
+~ R T T T C ~
+~ D C T C ~
+~ R T P A T ~
+~ C D C C B ~
+~ ~ ~ ~ ~ ~ ~
