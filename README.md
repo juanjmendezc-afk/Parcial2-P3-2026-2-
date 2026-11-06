@@ -8,7 +8,7 @@ Universidad del Quindío · 2026-2 · Docente: Carlos Andrés Flórez Villarraga
 | --- | --- | --- |
 | Juanjo Méndez _(completar nombre)_ | @juanjmendezc-afk | Transversal: módulo común de archivos, validaciones recursivas de ambos problemas y armado del PDF |
 | _pendiente_ | _pendiente_ | Problema 1: Rutas entre ciudades |
-| _pendiente_ | _pendiente_ | Problema 2: Escapar de la isla |
+| Daniel Gutierrez | @DanielYGutierrez | Problema 2: Escapar de la isla |
 
 ## Problemas elegidos
 
