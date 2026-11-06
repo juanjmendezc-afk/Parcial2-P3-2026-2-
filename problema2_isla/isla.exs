@@ -154,7 +154,12 @@ defmodule Isla do
     with {:ok, lineas_isla} <- Archivo.leer_lineas(ruta_isla),
          {:ok, lineas_terrenos} <- Archivo.leer_lineas(ruta_terrenos),
          {:ok, terrenos} <- leer_terrenos(lineas_terrenos) do
-      filas = Enum.map(lineas_isla, fn {_numero, texto} -> String.split(texto, " ", trim: true) end)
+      # Conversión perezosa de cada línea en su lista de símbolos; Enum.to_list
+      # es el único paso que recorre el stream y construye la lista de filas
+      filas =
+        lineas_isla
+        |> Stream.map(fn {_numero, texto} -> String.split(texto, " ", trim: true) end)
+        |> Enum.to_list()
 
       # Validación previa (recursiva): siempre se escribe validacion_isla.txt
       validacion = ValidacionIsla.validar(filas, terrenos)
