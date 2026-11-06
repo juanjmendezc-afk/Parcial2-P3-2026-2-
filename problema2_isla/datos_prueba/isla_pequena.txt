@@ -1,0 +1,6 @@
+# isla pequeña para la prueba de escritorio y el árbol de llamadas
+~ ~ ~ ~ ~
+~ P C C ~
+~ D T C ~
+~ C C B ~
+~ ~ ~ ~ ~
