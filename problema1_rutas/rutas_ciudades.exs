@@ -1,3 +1,8 @@
+# Módulos comunes del grupo: lectura y escritura de archivos (Archivo) y
+# validación recursiva de las conexiones (Depuracion).
+Code.require_file("../comun/archivo.exs", __DIR__)
+Code.require_file("depuracion.exs", __DIR__)
+
 defmodule Conexion do
   defstruct [:origen, :destino, :distancia]
 
@@ -49,10 +54,16 @@ defmodule RutasCiudades do
           &File.write!(&1, "")
         )
 
+        # Validación previa con recursión (depuracion.exs): recibe las conexiones
+        # numeradas {linea, texto, %Conexion{}} y devuelve las que se conservan
+        # y una línea de reporte por cada corrección.
+        {conservadas, reportes} = Depuracion.depurar(cargar_conexiones_lazy(@archivo_conexiones))
+        :ok = Archivo.escribir_lineas(@archivo_depuracion, Depuracion.lineas_reporte(reportes))
+
+        # El grafo se construye solo con las conexiones que pasaron la depuración
         grafo =
-          @archivo_conexiones
-          |> cargar_conexiones_lazy()
-          |> depurar_conexiones_recursivo(%{})
+          conservadas
+          |> Enum.map(fn {_linea, _texto, conexion} -> conexion end)
           |> construir_grafo()
 
         procesar_consultas_lazy(@archivo_consultas, grafo)
@@ -62,23 +73,19 @@ defmodule RutasCiudades do
     end
   end
 
-  # Numera antes de filtrar para conservar las líneas reales del archivo.
+  # Lectura perezosa con el módulo común (comun/archivo.exs): un stream de
+  # {numero_linea, texto} que numera antes de filtrar, para conservar las líneas
+  # reales del archivo, y descarta las vacías y los comentarios.
+  # main ya verificó que el archivo existe.
   defp lineas_utiles(path) do
-    path
-    |> File.stream!()
-    |> Stream.with_index(1)
-    |> Stream.map(fn {linea, numero} ->
-      {String.trim(linea), numero}
-    end)
-    |> Stream.reject(fn {linea, _numero} ->
-      linea == "" or String.starts_with?(linea, "#")
-    end)
+    {:ok, lineas} = Archivo.leer_lineas(path)
+    lineas
   end
 
   defp cargar_conexiones_lazy(path) do
     path
     |> lineas_utiles()
-    |> Stream.flat_map(fn {linea, numero} ->
+    |> Stream.flat_map(fn {numero, linea} ->
       case Conexion.parse(linea) do
         {:ok, conexion} ->
           [{numero, linea, conexion}]
@@ -89,50 +96,6 @@ defmodule RutasCiudades do
       end
     end)
     |> Enum.to_list()
-  end
-
-  # Para cada par sin dirección, guarda {número de línea, distancia original}.
-  defp depurar_conexiones_recursivo([], _primeras), do: []
-
-  defp depurar_conexiones_recursivo([{linea, contenido, conexion} | resto], primeras) do
-    %Conexion{origen: origen, destino: destino, distancia: distancia} = conexion
-    par = {min(origen, destino), max(origen, destino)}
-    prefijo = "Línea #{linea}: #{contenido} -> "
-
-    case {origen == destino, Map.fetch(primeras, par)} do
-      {true, _} ->
-        File.write!(
-          @archivo_depuracion,
-          prefijo <> "conecta una ciudad consigo misma; se descarta\n",
-          [:append]
-        )
-
-        depurar_conexiones_recursivo(resto, primeras)
-
-      {false, :error} ->
-        nuevas_primeras = Map.put(primeras, par, {linea, distancia})
-        [conexion | depurar_conexiones_recursivo(resto, nuevas_primeras)]
-
-      {false, {:ok, {linea_original, ^distancia}}} ->
-        File.write!(
-          @archivo_depuracion,
-          prefijo <> "repetida (línea #{linea_original}); se descarta\n",
-          [:append]
-        )
-
-        depurar_conexiones_recursivo(resto, primeras)
-
-      {false, {:ok, {linea_original, distancia_original}}} ->
-        File.write!(
-          @archivo_depuracion,
-          prefijo <>
-            "distancia distinta a la de la línea #{linea_original} (#{distancia_original}); " <>
-            "se conserva la de la línea #{linea_original}\n",
-          [:append]
-        )
-
-        depurar_conexiones_recursivo(resto, primeras)
-    end
   end
 
   defp construir_grafo(conexiones) do
@@ -179,7 +142,7 @@ defmodule RutasCiudades do
   defp procesar_consultas_lazy(path, grafo) do
     path
     |> lineas_utiles()
-    |> Stream.each(fn {linea, numero} ->
+    |> Stream.each(fn {numero, linea} ->
       case linea |> String.split(",") |> Enum.map(&String.trim/1) do
         [origen, destino] when origen != "" and destino != "" ->
           resolver_consulta(origen, destino, grafo)
