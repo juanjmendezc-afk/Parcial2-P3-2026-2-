@@ -7,7 +7,7 @@ Universidad del Quindío · 2026-2 · Docente: Carlos Andrés Flórez Villarraga
 | Nombre | Usuario GitHub | Responsabilidad |
 | --- | --- | --- |
 | Juanjo Méndez _(completar nombre)_ | @juanjmendezc-afk | Transversal: módulo común de archivos, validaciones recursivas de ambos problemas y armado del PDF |
-| _pendiente_ | _pendiente_ | Problema 1: Rutas entre ciudades |
+| Samuel | @4amuel3rturo | Problema 1: Rutas entre ciudades |
 | Daniel Gutierrez | @DanielYGutierrez | Problema 2: Escapar de la isla |
 
 ## Problemas elegidos
@@ -21,7 +21,7 @@ Cada archivo tiene un solo responsable, para que los tres podamos hacer push sin
 ```
 comun/archivo.exs              ← Transversal: lectura y escritura de archivos (único módulo con efectos en disco)
 problema1_rutas/
-  rutas.exs                    ← Problema 1: main, structs, grafo, alcance, búsqueda
+  rutas_ciudades.exs           ← Problema 1: main, structs, grafo, alcance, búsqueda
   depuracion.exs               ← Transversal: validación recursiva de las conexiones
   conexiones.csv, consultas.txt
 problema2_isla/
@@ -56,7 +56,7 @@ Code.require_file("../comun/archivo.exs", __DIR__)
 | `ValidacionIsla.validar(filas, terrenos)` (`problema2_isla/validacion_isla.exs`) | `filas`: lista de filas, cada una lista de símbolos; `terrenos`: mapa `%{simbolo => terreno}` (con campo `nombre`) | `:ok` o `{:error, problemas}` |
 | `ValidacionIsla.lineas_reporte(resultado)` | El resultado anterior | Líneas para `validacion_isla.txt` |
 
-Uso esperado en el Problema 1 (después de `Conexion.parse/1`, que también conserva el número de línea y el texto):
+Uso en el Problema 1 (`rutas_ciudades.exs`, después de `Conexion.parse/1`, que también conserva el número de línea y el texto):
 
 ```elixir
 {conservadas, reportes} = Depuracion.depurar(conexiones_numeradas)
@@ -64,7 +64,7 @@ Archivo.escribir_lineas(Path.join(__DIR__, "depuracion_conexiones.txt"), Depurac
 # El grafo se construye solo con `conservadas`
 ```
 
-Uso esperado en el Problema 2:
+Uso en el Problema 2 (`isla.exs`):
 
 ```elixir
 resultado = ValidacionIsla.validar(filas, terrenos)
@@ -85,9 +85,18 @@ Versión usada para probar: Elixir 1.19.4 (Erlang/OTP 28).
 
 Cada problema está en su propia carpeta, con su programa `.exs` y sus archivos de entrada.
 
+Desde la raíz del repositorio:
+
 ```bash
-elixir nombre_del_programa.exs
+elixir problema1_rutas/rutas_ciudades.exs     # Problema 1
+elixir problema2_isla/isla.exs                # Problema 2
+elixir problema2_isla/isla.exs problema2_isla/datos_prueba/isla_pequena.txt   # Problema 2 con otro mapa
 ```
+
+| Problema | Archivos de entrada | Archivos de salida |
+| --- | --- | --- |
+| 1 | `conexiones.csv`, `consultas.txt` | `errores_conexiones.txt`, `depuracion_conexiones.txt`, `alcance.txt`, `rutas_encontradas.txt` |
+| 2 | `isla.txt`, `terrenos.csv` | `validacion_isla.txt`, `rutas_isla.csv`, `resumen_isla.txt` |
 
 Las rutas se construyen con `Path.join(__DIR__, ...)`, así que el programa funciona sin importar desde qué carpeta se ejecute.
 
