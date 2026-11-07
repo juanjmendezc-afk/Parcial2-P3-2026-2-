@@ -14,7 +14,7 @@ defmodule Conexion do
 
       [origen, destino, distancia_texto] ->
         case Integer.parse(distancia_texto) do
-          {distancia, ""} when distancia >= 0  ->
+          {distancia, ""} when distancia >= 0 ->
             {:ok, %Conexion{origen: origen, destino: destino, distancia: distancia}}
 
           _ ->
@@ -32,14 +32,14 @@ defmodule Ruta do
 end
 
 defmodule RutasCiudades do
-  @archivo_conexiones "conexiones.csv"
-  @archivo_consultas "consultas.txt"
-  @archivo_errores "errores_conexiones.txt"
-  @archivo_depuracion "depuracion_conexiones.txt"
-  @archivo_alcance "alcance.txt"
-  @archivo_salida "rutas_encontradas.txt"
+  @archivo_conexiones Path.join(__DIR__, "conexiones.csv")
+  @archivo_consultas Path.join(__DIR__, "consultas.txt")
+  @archivo_errores Path.join(__DIR__, "errores_conexiones.txt")
+  @archivo_depuracion Path.join(__DIR__, "depuracion_conexiones.txt")
+  @archivo_alcance Path.join(__DIR__, "alcance.txt")
+  @archivo_salida Path.join(__DIR__, "rutas_encontradas.txt")
 
-  def main do #1
+  def main do
     faltantes = Enum.reject([@archivo_conexiones, @archivo_consultas], &File.regular?/1)
 
     case faltantes do
@@ -62,8 +62,8 @@ defmodule RutasCiudades do
     end
   end
 
-
-  defp lineas_utiles(path) do #3
+  # Numera antes de filtrar para conservar las líneas reales del archivo.
+  defp lineas_utiles(path) do
     path
     |> File.stream!()
     |> Stream.with_index(1)
@@ -91,7 +91,7 @@ defmodule RutasCiudades do
     |> Enum.to_list()
   end
 
-
+  # Para cada par sin dirección, guarda {número de línea, distancia original}.
   defp depurar_conexiones_recursivo([], _primeras), do: []
 
   defp depurar_conexiones_recursivo([{linea, contenido, conexion} | resto], primeras) do
