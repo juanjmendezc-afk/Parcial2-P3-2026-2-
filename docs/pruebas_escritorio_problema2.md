@@ -191,4 +191,75 @@ Para reproducirlo: `cd problema2_isla` y `elixir isla.exs datos_prueba/isla_pequ
 
 ## 5. Árbol de llamadas
 
-_Pendiente: se agrega en el siguiente paso._
+### 5.1 Vista resumida: solo las llamadas que se realizan
+
+Cada nodo es una llamada a `explorar/6`. A la derecha está lo que devuelve, después de que `flat_map` junta los resultados de sus hijos.
+
+```
+Busqueda.rutas(mapa, {1,1}, {3,3})
+└── #1 explorar({1,1}, costo 0)                                  → [Ruta A, Ruta B]
+    ├── abajo   → #2 explorar({2,1}, costo 2)                    → [Ruta A]
+    │             └── abajo   → #3 explorar({3,1}, costo 3)      → [Ruta A]
+    │                           └── derecha → #4 explorar({3,2}, costo 4)   → [Ruta A]
+    │                                         └── derecha → #5 explorar({3,3}, costo 5)
+    │                                                       ★ CASO BASE → [Ruta A]
+    └── derecha → #6 explorar({1,2}, costo 1)                    → [Ruta B]
+                  └── derecha → #7 explorar({1,3}, costo 2)      → [Ruta B]
+                                └── abajo   → #8 explorar({2,3}, costo 3)   → [Ruta B]
+                                              └── abajo   → #9 explorar({3,3}, costo 4)
+                                                            ★ CASO BASE → [Ruta B]
+```
+
+### 5.2 Vista completa: llamadas y decisiones de cada dirección
+
+Leyenda: `(+n)` costo que se suma al entrar · `──►` llamada recursiva · `✗` dirección descartada · `★` caso base.
+
+```
+#1 explorar({1,1}, costo 0)
+├── abajo     {2,1} D (+2) ──► #2 explorar({2,1}, costo 2)
+│   ├── abajo     {3,1} C (+1) ──► #3 explorar({3,1}, costo 3)
+│   │   ├── abajo     {4,1} ~      ✗ no transitable                  → []
+│   │   ├── derecha   {3,2} C (+1) ──► #4 explorar({3,2}, costo 4)
+│   │   │   ├── abajo     {4,2} ~      ✗ no transitable              → []
+│   │   │   ├── derecha   {3,3} B (+1) ──► #5 explorar({3,3}, costo 5)
+│   │   │   │                          ★ CASO BASE: es el bote       → [Ruta A]
+│   │   │   ├── arriba    {2,2} T      ✗ no transitable              → []
+│   │   │   └── izquierda {3,1} C      ✗ visitada                    → []
+│   │   │   flat_map → [Ruta A]
+│   │   ├── arriba    {2,1} D      ✗ visitada                        → []
+│   │   └── izquierda {3,0} ~      ✗ no transitable                  → []
+│   │   flat_map → [Ruta A]
+│   ├── derecha   {2,2} T      ✗ no transitable                      → []
+│   ├── arriba    {1,1} P      ✗ visitada                            → []
+│   └── izquierda {2,0} ~      ✗ no transitable                      → []
+│   flat_map → [Ruta A]
+│
+├── derecha   {1,2} C (+1) ──► #6 explorar({1,2}, costo 1)
+│   ├── abajo     {2,2} T      ✗ no transitable                      → []
+│   ├── derecha   {1,3} C (+1) ──► #7 explorar({1,3}, costo 2)
+│   │   ├── abajo     {2,3} C (+1) ──► #8 explorar({2,3}, costo 3)
+│   │   │   ├── abajo     {3,3} B (+1) ──► #9 explorar({3,3}, costo 4)
+│   │   │   │                          ★ CASO BASE: es el bote       → [Ruta B]
+│   │   │   ├── derecha   {2,4} ~      ✗ no transitable              → []
+│   │   │   ├── arriba    {1,3} C      ✗ visitada                    → []
+│   │   │   └── izquierda {2,2} T      ✗ no transitable              → []
+│   │   │   flat_map → [Ruta B]
+│   │   ├── derecha   {1,4} ~      ✗ no transitable                  → []
+│   │   ├── arriba    {0,3} ~      ✗ no transitable                  → []
+│   │   └── izquierda {1,2} C      ✗ visitada                        → []
+│   │   flat_map → [Ruta B]
+│   ├── arriba    {0,2} ~      ✗ no transitable                      → []
+│   └── izquierda {1,1} P      ✗ visitada                            → []
+│   flat_map → [Ruta B]
+│
+├── arriba    {0,1} ~      ✗ no transitable                          → []
+└── izquierda {1,0} ~      ✗ no transitable                          → []
+flat_map → [Ruta A, Ruta B]
+```
+
+### 5.3 Cómo leer el árbol
+
+- **Llamadas realizadas:** 9 a `explorar/6`. Las llamadas #5 y #9 son casos base.
+- **Direcciones evaluadas:** las 7 llamadas que no son caso base revisan 4 direcciones cada una (28 en total). 8 terminan en una llamada recursiva y 20 se descartan: 14 por terreno no transitable (agua o árbol, con *pattern matching* sobre `%Terreno{transitable: false}`) y 6 por posición ya visitada.
+- **Cómo suben los resultados:** cada caso base devuelve una lista con una ruta; cada nivel junta con `flat_map` las listas de sus 4 direcciones (las descartadas aportan `[]`). En la raíz quedan las dos rutas, en el orden en que se encontraron: primero la de abajo (Ruta A) y después la de la derecha (Ruta B).
+- **Ramas independientes:** la rama de la derecha (#6 a #9) no ve las posiciones visitadas por la rama de abajo (#2 a #5), porque cada llamada recibe su propio `MapSet` de visitadas.
